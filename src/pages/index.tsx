@@ -28,6 +28,7 @@ const Home: NextPage = () => {
           button will change to join. If you would like to create a room, leave
           it blank and you will get a link on the next screen
         </p>
+        <p>Redis message: {hello.data}</p>
       </main>
     </>
   );
