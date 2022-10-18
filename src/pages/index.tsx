@@ -13,10 +13,21 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className="container mx-auto flex min-h-screen flex-col items-center justify-center p-4">
-        <h1 className="text-5xl font-extrabold leading-normal text-gray-700 md:text-[5rem]">
-          Create <span className="text-purple-300">T3</span> App
+      <main className="container mx-auto flex min-h-screen flex-col items-center justify-start gap-10 p-4">
+        <h1 className="text-4xl font-extrabold leading-normal text-neutral-100 md:text-[5rem]">
+          Phantom <span className="text-rose-500">Notepad</span>
         </h1>
+        <div className="flex w-full justify-center gap-2 lg:w-1/2">
+          <input className="grow rounded-l-xl p-5 lg:text-4xl" />
+          <button className="rounded-r-xl border p-5 text-2xl text-neutral-100 hover:bg-teal-700">
+            Create
+          </button>
+        </div>
+        <p className="text-xl lg:w-1/2">
+          If you have a room number of an existing room, enter it above and the
+          button will change to join. If you would like to create a room, leave
+          it blank and you will get a link on the next screen
+        </p>
       </main>
     </>
   );
