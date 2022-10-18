@@ -4,14 +4,38 @@ import { useState } from "react";
 import { trpc } from "../utils/trpc";
 
 const Home: NextPage = () => {
-  const [randomNumber, setRandomNumber] = useState();
-  const hello = trpc.example.hello.useQuery({ text: "from tRPC" });
-  trpc.example.randomNumber.useSubscription(undefined, {
-    onData(data) {
-      setRandomNumber(data);
-      console.log("data is ", data);
+  const [randomNumber, setRandomNumber] = useState<number>();
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState<string[]>([]);
+  const hello = trpc.example.hello.useQuery();
+  const addMessage = trpc.example.add.useMutation();
+  // trpc.example.randomNumber.useSubscription(undefined, {
+  //   onData(data) {
+  //     setRandomNumber(data);
+  //     console.log("data is ", data);
+  //   },
+  // });
+
+  trpc.example.onAdd.useSubscription(undefined, {
+    onData(newMessage) {
+      console.log("messages is ", messages);
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
+    },
+    onError(err) {
+      console.error("Subscription error:", err);
     },
   });
+
+  async function postMessage() {
+    const input = {
+      key: "welcome",
+      text: message,
+    };
+    try {
+      await addMessage.mutateAsync(input);
+      setMessage("");
+    } catch {}
+  }
 
   return (
     <>
@@ -26,8 +50,15 @@ const Home: NextPage = () => {
           Phantom <span className="text-rose-500">Notepad</span>
         </h1>
         <div className="flex w-full justify-center gap-2 lg:w-1/2">
-          <input className="grow rounded-l-xl p-5 lg:text-4xl" />
-          <button className="rounded-r-xl border p-5 text-2xl text-neutral-100 hover:bg-teal-700">
+          <input
+            className="grow rounded-l-xl p-5 lg:text-4xl"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+          />
+          <button
+            className="rounded-r-xl border p-5 text-2xl text-neutral-100 hover:bg-teal-700"
+            onClick={() => postMessage()}
+          >
             Create
           </button>
         </div>
@@ -37,6 +68,13 @@ const Home: NextPage = () => {
           it blank and you will get a link on the next screen
         </p>
         <p>Redis message: {hello.data}</p>
+        <ul>
+          {messages.map((value, index) => (
+            <li key={index} className="text-slate-200">
+              {value}
+            </li>
+          ))}
+        </ul>
         <p>Websocket random: {randomNumber}</p>
       </main>
     </>
