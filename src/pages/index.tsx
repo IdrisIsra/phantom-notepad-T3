@@ -1,9 +1,17 @@
 import type { NextPage } from "next";
 import Head from "next/head";
+import { useState } from "react";
 import { trpc } from "../utils/trpc";
 
 const Home: NextPage = () => {
+  const [randomNumber, setRandomNumber] = useState();
   const hello = trpc.example.hello.useQuery({ text: "from tRPC" });
+  trpc.example.randomNumber.useSubscription(undefined, {
+    onData(data) {
+      setRandomNumber(data);
+      console.log("data is ", data);
+    },
+  });
 
   return (
     <>
@@ -29,6 +37,7 @@ const Home: NextPage = () => {
           it blank and you will get a link on the next screen
         </p>
         <p>Redis message: {hello.data}</p>
+        <p>Websocket random: {randomNumber}</p>
       </main>
     </>
   );
