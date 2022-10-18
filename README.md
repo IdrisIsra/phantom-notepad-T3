@@ -1,6 +1,6 @@
 # Phantom Notepad T3
 
-This app uses the follow from the T3 stack:
+This app uses the following from the T3 stack:
 
 - Typescript
 - tRPC with websockets
