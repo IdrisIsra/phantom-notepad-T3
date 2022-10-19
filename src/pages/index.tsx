@@ -1,41 +1,13 @@
 import type { NextPage } from "next";
 import Head from "next/head";
+import { useRouter } from "next/router";
 import { useState } from "react";
 import { trpc } from "../utils/trpc";
 
 const Home: NextPage = () => {
-  const [randomNumber, setRandomNumber] = useState<number>();
-  const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<string[]>([]);
+  const router = useRouter();
+  const [roomNumber, setRoomNumber] = useState("");
   const hello = trpc.example.hello.useQuery();
-  const addMessage = trpc.example.add.useMutation();
-  // trpc.example.randomNumber.useSubscription(undefined, {
-  //   onData(data) {
-  //     setRandomNumber(data);
-  //     console.log("data is ", data);
-  //   },
-  // });
-
-  trpc.example.onAdd.useSubscription(undefined, {
-    onData(newMessage) {
-      console.log("messages is ", messages);
-      setMessages((prevMessages) => [...prevMessages, newMessage]);
-    },
-    onError(err) {
-      console.error("Subscription error:", err);
-    },
-  });
-
-  async function postMessage() {
-    const input = {
-      key: "welcome",
-      text: message,
-    };
-    try {
-      await addMessage.mutateAsync(input);
-      setMessage("");
-    } catch {}
-  }
 
   return (
     <>
@@ -52,12 +24,13 @@ const Home: NextPage = () => {
         <div className="flex w-full justify-center gap-2 lg:w-1/2">
           <input
             className="grow rounded-l-xl p-5 lg:text-4xl"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            value={roomNumber}
+            onChange={(e) => setRoomNumber(e.target.value)}
+            autoComplete="off"
           />
           <button
             className="rounded-r-xl border p-5 text-2xl text-neutral-100 hover:bg-teal-700"
-            onClick={() => postMessage()}
+            onClick={() => router.push(`/notepad/${roomNumber}`)}
           >
             Create
           </button>
@@ -68,14 +41,6 @@ const Home: NextPage = () => {
           it blank and you will get a link on the next screen
         </p>
         <p>Redis message: {hello.data}</p>
-        <ul>
-          {messages.map((value, index) => (
-            <li key={index} className="text-slate-200">
-              {value}
-            </li>
-          ))}
-        </ul>
-        <p>Websocket random: {randomNumber}</p>
       </main>
     </>
   );
