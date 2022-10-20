@@ -9,6 +9,7 @@ interface MyEvents {
   add: (data: string) => void;
   isTypingUpdate: () => void;
 }
+
 declare interface MyEventEmitter {
   on<TEv extends keyof MyEvents>(event: TEv, listener: MyEvents[TEv]): this;
   off<TEv extends keyof MyEvents>(event: TEv, listener: MyEvents[TEv]): this;
@@ -18,26 +19,32 @@ declare interface MyEventEmitter {
     ...args: Parameters<MyEvents[TEv]>
   ): boolean;
 }
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 class MyEventEmitter extends EventEmitter {}
 
 const ee = new MyEventEmitter();
 
-export const exampleRouter = router({
-  hello: publicProcedure.query(async ({ input }) => {
+export const messageRouter = router({
+  getText: publicProcedure.query(async () => {
     return await redisClient.get("welcome");
   }),
 
   add: publicProcedure
     .input(
       z.object({
-        key: z.string(),
-        text: z.string().min(1),
+        position: z.number(),
+        character: z.string().length(1),
       })
     )
     .mutation(async ({ input }) => {
-      const message = await redisClient.set(input.key, input.text);
-      ee.emit("add", input.text);
+      const currentText = await redisClient.get("welcome");
+      const newText =
+        currentText?.slice(0, input.position) +
+        input.character +
+        currentText?.slice(input.position);
+
+      ee.emit("add", newText);
+      const message = await redisClient.set("welcome", newText);
 
       return message;
     }),

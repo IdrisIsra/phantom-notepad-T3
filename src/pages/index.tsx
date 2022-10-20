@@ -2,12 +2,10 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { trpc } from "../utils/trpc";
 
 const Home: NextPage = () => {
   const router = useRouter();
   const [roomNumber, setRoomNumber] = useState("");
-  const hello = trpc.example.hello.useQuery();
 
   return (
     <>
@@ -40,7 +38,6 @@ const Home: NextPage = () => {
           button will change to join. If you would like to create a room, leave
           it blank and you will get a link on the next screen
         </p>
-        <p>Redis message: {hello.data}</p>
       </main>
     </>
   );

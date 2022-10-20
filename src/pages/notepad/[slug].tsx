@@ -1,24 +1,36 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import { useState } from "react";
+import { useState, useEffect, useRef, useLayoutEffect } from "react";
+import { flushSync } from "react-dom";
 import { trpc } from "../../utils/trpc";
 
 const NotepadPage: NextPage = () => {
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<string[]>([]);
-  const hello = trpc.example.hello.useQuery();
-  const addMessage = trpc.example.add.useMutation();
-  // trpc.example.randomNumber.useSubscription(undefined, {
-  //   onData(data) {
-  //     setRandomNumber(data);
-  //     console.log("data is ", data);
-  //   },
-  // });
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [selection, setSelection] = useState({ start: 0, end: 0 });
 
-  trpc.example.onAdd.useSubscription(undefined, {
+  const addMessage = trpc.message.add.useMutation();
+  const { status, data } = trpc.message.getText.useQuery();
+
+  useEffect(() => {
+    if (status === "success" && data) {
+      setMessage(data);
+    }
+  }, [status, data]);
+
+  // useLayoutEffect(() => {
+  //   if (inputRef.current) {
+
+  //   }
+  // }, [selection.start, selection.end]);
+
+  trpc.message.onAdd.useSubscription(undefined, {
     onData(newMessage) {
-      console.log("messages is ", messages);
-      setMessages((prevMessages) => [...prevMessages, newMessage]);
+      console.log("message is ", message);
+      if (newMessage) {
+        flushSync(() => setMessage(newMessage));
+      }
+      inputRef?.current?.setSelectionRange(selection.start, selection.end);
     },
     onError(err) {
       console.error("Subscription error:", err);
@@ -26,20 +38,21 @@ const NotepadPage: NextPage = () => {
   });
 
   async function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
-    setMessage(e.target.value);
-    console.log("Selection start: ", e.target.selectionStart);
-    console.log("Derived data: ", e.target.value[e.target.selectionStart - 1]);
-  }
+    const selectionStart = e.target.selectionStart;
+    const character = e.target.value[e.target.selectionStart - 1];
 
-  async function postMessage() {
+    if (!character) return;
+
     const input = {
-      key: "welcome",
-      text: message,
+      position: selectionStart - 1,
+      character: character,
     };
+
     try {
       await addMessage.mutateAsync(input);
-      setMessage("");
     } catch {}
+
+    console.log("Selection start: ");
   }
 
   return (
@@ -56,9 +69,16 @@ const NotepadPage: NextPage = () => {
         </h1>
         <div className="flex w-full justify-center gap-2 lg:w-1/2">
           <textarea
+            ref={inputRef}
             className="h-[550px] grow rounded p-5 "
             value={message}
             onChange={handleInput}
+            onSelect={(e) => {
+              setSelection({
+                start: e.currentTarget.selectionStart || 0,
+                end: e.currentTarget.selectionEnd || 0,
+              });
+            }}
             maxLength={1500}
           />
         </div>
