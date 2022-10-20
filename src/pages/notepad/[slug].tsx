@@ -28,9 +28,9 @@ const NotepadPage: NextPage = () => {
     onData(newMessage) {
       console.log("message is ", message);
       if (newMessage) {
-        flushSync(() => setMessage(newMessage));
+        setMessage(newMessage);
       }
-      inputRef?.current?.setSelectionRange(selection.start, selection.end);
+      // inputRef?.current?.setSelectionRange(selection.start, selection.end);
     },
     onError(err) {
       console.error("Subscription error:", err);
