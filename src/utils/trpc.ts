@@ -35,9 +35,7 @@ function getEndingLink(ctx: NextPageContext | undefined) {
     });
   }
   const client = createWSClient({
-    url: process.env.VERCEL_URL
-      ? `wss://${process.env.VERCEL_URL}`
-      : `ws://localhost:3001`,
+    url: `wss://${process.env.VERCEL_URL}`,
   });
   return wsLink<AppRouter>({
     client,
