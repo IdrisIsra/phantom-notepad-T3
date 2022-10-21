@@ -6,20 +6,15 @@ import {
   createWSClient,
   wsLink,
 } from "@trpc/client";
-import getConfig from "next/config";
 import { createTRPCNext } from "@trpc/next";
 import type { GetInferenceHelpers } from "@trpc/server";
 import { NextPageContext } from "next";
 import type { AppRouter } from "../server/trpc/router/_app";
 
-const { publicRuntimeConfig } = getConfig();
-
-const { APP_URL, WS_URL } = publicRuntimeConfig;
-
 const getBaseUrl = () => {
   if (typeof window !== "undefined") return ""; // browser should use relative url
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`; // SSR should use vercel url
-  if (process.env.NODE_ENV !== "development") return APP_URL;
+
   return `http://localhost:${process.env.PORT ?? 3000}`; // dev SSR should use localhost
 };
 
@@ -40,8 +35,9 @@ function getEndingLink(ctx: NextPageContext | undefined) {
     });
   }
   const client = createWSClient({
-    url:
-      process.env.NODE_ENV !== "development" ? WS_URL : `ws://localhost:3001`,
+    url: process.env.VERCEL_URL
+      ? process.env.VERCEL_URL
+      : `ws://localhost:3001`,
   });
   return wsLink<AppRouter>({
     client,
