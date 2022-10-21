@@ -1,7 +1,6 @@
 import type { NextPage } from "next";
 import Head from "next/head";
 import { useState, useEffect, useRef } from "react";
-import { flushSync } from "react-dom";
 import { trpc } from "../../utils/trpc";
 
 const NotepadPage: NextPage = () => {
