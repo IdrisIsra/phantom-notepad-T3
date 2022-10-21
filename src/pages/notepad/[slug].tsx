@@ -1,6 +1,6 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import { useState, useEffect, useRef, useLayoutEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { flushSync } from "react-dom";
 import { trpc } from "../../utils/trpc";
 
@@ -18,18 +18,23 @@ const NotepadPage: NextPage = () => {
     }
   }, [status, data]);
 
-  // useLayoutEffect(() => {
-  //   if (inputRef.current) {
-
-  //   }
-  // }, [selection.start, selection.end]);
-
   trpc.message.onAdd.useSubscription(undefined, {
     onData(newMessage) {
-      console.log("message is ", message);
-      if (newMessage) {
-        setMessage(newMessage);
-      }
+      // const currentText = message;
+      // const newText =
+      //   currentText?.slice(0, newMessage.selectionStart) +
+      //   newMessage.text +
+      //   currentText?.slice(newMessage.selectionEnd);
+      // console.log(newText);
+      setMessage((oldMessage) => {
+        return (
+          oldMessage?.slice(0, newMessage.selectionStart) +
+          newMessage.text +
+          oldMessage?.slice(newMessage.selectionEnd)
+        );
+      });
+
+      console.log(newMessage);
       // inputRef?.current?.setSelectionRange(selection.start, selection.end);
     },
     onError(err) {
@@ -38,14 +43,17 @@ const NotepadPage: NextPage = () => {
   });
 
   async function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
-    const selectionStart = e.target.selectionStart;
+    console.log(e);
+    const selectionStart = selection.start;
+    const selectionEnd = selection.end;
     const character = e.target.value[e.target.selectionStart - 1];
 
     if (!character) return;
 
     const input = {
-      position: selectionStart - 1,
-      character: character,
+      selectionStart: selectionStart,
+      selectionEnd: selectionEnd,
+      text: character,
     };
 
     try {
@@ -74,6 +82,8 @@ const NotepadPage: NextPage = () => {
             value={message}
             onChange={handleInput}
             onSelect={(e) => {
+              console.log(e.currentTarget.selectionStart);
+              console.log(e.currentTarget.selectionEnd);
               setSelection({
                 start: e.currentTarget.selectionStart || 0,
                 end: e.currentTarget.selectionEnd || 0,

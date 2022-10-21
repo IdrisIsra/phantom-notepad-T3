@@ -5,9 +5,14 @@ import { EventEmitter } from "events";
 import { observable } from "@trpc/server/observable";
 import { clearInterval } from "timers";
 
+type TypeInput = {
+  selectionStart: number;
+  selectionEnd: number;
+  text: string;
+};
+
 interface MyEvents {
-  add: (data: string) => void;
-  isTypingUpdate: () => void;
+  add: (data: TypeInput) => void;
 }
 
 declare interface MyEventEmitter {
@@ -32,26 +37,27 @@ export const messageRouter = router({
   add: publicProcedure
     .input(
       z.object({
-        position: z.number(),
-        character: z.string().length(1),
+        selectionStart: z.number(),
+        selectionEnd: z.number(),
+        text: z.string().length(1),
       })
     )
     .mutation(async ({ input }) => {
       const currentText = await redisClient.get("welcome");
       const newText =
-        currentText?.slice(0, input.position) +
-        input.character +
-        currentText?.slice(input.position);
+        currentText?.slice(0, input.selectionStart) +
+        input.text +
+        currentText?.slice(input.selectionEnd);
 
-      ee.emit("add", newText);
       const message = await redisClient.set("welcome", newText);
+      ee.emit("add", input);
 
       return message;
     }),
 
   onAdd: publicProcedure.subscription(() => {
-    return observable<string>((emit) => {
-      const onAdd = (data: string) => emit.next(data);
+    return observable<TypeInput>((emit) => {
+      const onAdd = (data: TypeInput) => emit.next(data);
       ee.on("add", onAdd);
       return () => {
         ee.off("add", onAdd);
