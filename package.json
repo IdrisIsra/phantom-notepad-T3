@@ -3,12 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "next build",
+    "build:1-next": "cross-env NODE_ENV=production next build",
+    "build:2-server": "tsc --project tsconfig.server.json",
+    "build": "run-s build:*",
     "lint": "next lint",
-    "start": "next start",
     "dev:wss": "cross-env PORT=3001 tsx watch src/server/trpc/wssDevServer.ts --tsconfig tsconfig.server.json ",
     "dev:next": "next dev",
-    "dev": "run-p dev:*"
+    "dev": "run-p dev:*",
+    "start": "cross-env NODE_ENV=production node dist/server/trpc/prodServer.js"
   },
   "dependencies": {
     "@tanstack/react-query": "^4.10.0",
