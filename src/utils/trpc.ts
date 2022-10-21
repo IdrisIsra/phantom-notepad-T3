@@ -35,7 +35,7 @@ function getEndingLink(ctx: NextPageContext | undefined) {
     });
   }
   const client = createWSClient({
-    url: `wss://https://trpc-websockets-ucik.onrender.com`,
+    url: `wss://trpc-websockets-ucik.onrender.com`,
   });
   return wsLink<AppRouter>({
     client,
